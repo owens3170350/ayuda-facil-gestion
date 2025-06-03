@@ -1,49 +1,36 @@
 
-import { useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { TicketIcon, Users, BarChart3, Settings, Plus } from "lucide-react";
-import { LoginForm } from "@/components/auth/LoginForm";
+import { TicketIcon, BarChart3, Settings } from "lucide-react";
 import { Dashboard } from "@/components/dashboard/Dashboard";
 import { TicketList } from "@/components/tickets/TicketList";
 import { AdminPanel } from "@/components/admin/AdminPanel";
+import { AuthPage } from "@/components/auth/AuthPage";
+import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
 
 const Index = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState<"admin" | "client">("client");
+  const { user, userRole, loading, signOut } = useAuth();
   const [activeSection, setActiveSection] = useState("dashboard");
 
-  // Simulación de login - después conectaremos con Supabase Auth
-  const handleLogin = (email: string, password: string, role: "admin" | "client") => {
-    console.log("Login attempt:", { email, role });
-    setIsLoggedIn(true);
-    setUserRole(role);
-  };
+  // Redirect logic
+  useEffect(() => {
+    if (!loading && !user) {
+      // User is not authenticated, show auth page
+    }
+  }, [user, loading]);
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserRole("client");
-    setActiveSection("dashboard");
-  };
-
-  if (!isLoggedIn) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
-              <TicketIcon className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">HelpDesk Pro</h1>
-            <p className="text-gray-600">Sistema de Gestión de Tickets</p>
-          </div>
-          <LoginForm onLogin={handleLogin} />
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-lg">Cargando...</div>
       </div>
     );
+  }
+
+  if (!user) {
+    return <AuthPage />;
   }
 
   const navigationItems = [
@@ -53,7 +40,7 @@ const Index = () => {
   ];
 
   const visibleNavItems = navigationItems.filter(item => 
-    item.roles.includes(userRole)
+    item.roles.includes(userRole || 'client')
   );
 
   return (
@@ -72,7 +59,7 @@ const Index = () => {
               <span className="text-sm text-gray-600">
                 {userRole === "admin" ? "Administrador" : "Cliente"}
               </span>
-              <Button variant="outline" onClick={handleLogout}>
+              <Button variant="outline" onClick={signOut}>
                 Cerrar Sesión
               </Button>
             </div>
@@ -94,12 +81,12 @@ const Index = () => {
 
           {/* Dashboard */}
           <TabsContent value="dashboard" className="space-y-6">
-            <Dashboard userRole={userRole} />
+            <Dashboard />
           </TabsContent>
 
           {/* Tickets */}
           <TabsContent value="tickets" className="space-y-6">
-            <TicketList userRole={userRole} />
+            <TicketList />
           </TabsContent>
 
           {/* Admin Panel */}
