@@ -39,12 +39,6 @@ export type Database = {
         }
         Relationships: []
       }
-      helpdesk: {
-        Row: {}
-        Insert: {}
-        Update: {}
-        Relationships: []
-      }
       profiles: {
         Row: {
           created_at: string | null

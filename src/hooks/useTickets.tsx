@@ -22,11 +22,11 @@ export interface Ticket {
   categories?: {
     name: string;
     color: string;
-  };
+  } | null;
   profiles?: {
     full_name: string;
     email: string;
-  };
+  } | null;
 }
 
 export interface CreateTicketData {
@@ -68,7 +68,14 @@ export const useTickets = () => {
         return;
       }
 
-      setTickets(data || []);
+      // Transformar los datos para que coincidan con nuestro tipo Ticket
+      const transformedTickets: Ticket[] = (data || []).map(ticket => ({
+        ...ticket,
+        categories: ticket.categories as { name: string; color: string } | null,
+        profiles: ticket.profiles as { full_name: string; email: string } | null,
+      }));
+
+      setTickets(transformedTickets);
     } catch (error) {
       console.error('Error fetching tickets:', error);
       toast.error('Error al cargar tickets');
